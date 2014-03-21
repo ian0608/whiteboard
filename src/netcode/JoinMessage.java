@@ -1,20 +1,22 @@
 import java.net.SocketAddress;
 import java.io.Serializable;
 
-public class JoinMessage extends Message implements Serializable
+public class JoinMessage implements Message, Serializable
 {
+	private SocketAddress masterIP;
+
 	public JoinMessage()
 	{
-		payload = null;
+		masterIP = null;
 	}
 
 	public JoinMessage(SocketAddress masterIP)
 	{
-		payload = masterIP;
+		this.masterIP = masterIP;
 	}
 
 	public SocketAddress getPayload()
 	{
-		return (SocketAddress)payload;
+		return masterIP;
 	}
 }

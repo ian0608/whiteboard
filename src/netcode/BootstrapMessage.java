@@ -1,9 +1,9 @@
 import java.io.Serializable;
 
-public class BootstrapMessage extends Message implements Serializable
+public class BootstrapMessage implements Message, Serializable
 {
-	public BootstrapMessage()
+	public Object getPayload()
 	{
-		payload = null;
+		return null;
 	}
 }

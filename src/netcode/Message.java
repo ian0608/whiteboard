@@ -1,4 +1,4 @@
-public abstract class Message
+public interface Message
 {
-	protected Object payload;	
+	public Object getPayload();	
 }
