@@ -5,7 +5,7 @@ Communications Protocol for Collaborative Whiteboarding
 
 Establishing a New Whiteboarding Session
 1. The node that would like to be the "master" for the new whiteboarding session sends the bootstrapping server an object of type BootstrapMessage. It is the sending node's responsibility to ensure it can accept incoming connections from peers (i.e. it should not be behind NAT).
-2. Server denotes the sending node's IP address as the master for this new session. Server sends the node an object of type BootstrapMessage; this informs the node that it has been accepted as the master. This node should now enter its "master state."
+2. Server denotes the sending node's IP address as the master for this new session. If there is not already an active master, the server sends the node an object of type BootstrapMessage; this informs the node that it has been accepted as the master. This node should now enter its "master state." Else, server goes to step 2 of "Joining a Whiteboarding Session."
 
 Joining a Whiteboarding Session
 1. The node wishing to join the session sends the bootstrapping server an object of type JoinMessage with a null payload.
