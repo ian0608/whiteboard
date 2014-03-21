@@ -1,0 +1,22 @@
+Communications Protocol for Collaborative Whiteboarding
+
+(Message classes referenced here are located in src/netcode)
+(Bootstrapping server is assumed to be running for the duration of these steps)
+
+Establishing a New Whiteboarding Session
+1. The node that would like to be the "master" for the new whiteboarding session sends the bootstrapping server an object of type BootstrapMessage. It is the sending node's responsibility to ensure it can accept incoming connections from peers (i.e. it should not be behind NAT).
+2. Server denotes the sending node's IP address as the master for this new session. Server sends the node an object of type BootstrapMessage; this informs the node that it has been accepted as the master. This node should now enter its "master state."
+
+Joining a Whiteboarding Session
+1. The node wishing to join the session sends the bootstrapping server an object of type JoinMessage with a null payload.
+2. The bootstrapping server responds with an object of type JoinMessage with the address of the master node as the payload. Bootstrapping server will also note the joining node's IP address in case the nodes participating in this session must later be assigned a new master.
+3. Joining node sends the master node an object of type JoinMessage with a null payload.
+4. Master node responds with an object of type DeltaMessage with a payload representing the current state of the whiteboard.
+
+Disseminating Changes
+1. When a node makes a change to the whiteboard, it sends the master node an object of type DeltaMessage with a payload representing the changed pixels (support for erasing is available via the "filledIn" boolean).
+2. The master node will rebroadcast this object to any other peers besides the peer that made the changes.
+
+Fault-Tolerance (to be discussed more later)
+Some sort of "pinging" may occur between the master node and the bootstrapping server to ensure the master is still "alive." In the event that the bootstrapping server detects a "dead" master, it will attempt to choose a new master and send this master's IP address to the participating peers.
+
