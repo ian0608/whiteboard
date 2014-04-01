@@ -1,3 +1,5 @@
+package netcode;
+
 import java.io.Serializable;
 
 public class Pixel implements Serializable
