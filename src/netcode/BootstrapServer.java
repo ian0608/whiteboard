@@ -76,7 +76,6 @@ public class BootstrapServer
 						{
 							if (masterAddress != null)
 							{
-								//System.out.println("Cannot designate new master - Session already active");
 								System.out.println("Already have a master - relaying the master's address");
 								out.writeObject(new JoinMessage(masterAddress));
 							}
@@ -89,7 +88,7 @@ public class BootstrapServer
 						}
 						else if (rec instanceof JoinMessage) //client wishes to join existing session
 						{
-							
+							out.writeObject(new JoinMessage(masterAddress));
 						}
 					
 						//in.close();
@@ -107,20 +106,9 @@ public class BootstrapServer
          		{
             		e.printStackTrace();
          		}
-				}
 
-				/*
-				catch(SocketTimeoutException s)
-         	{
-            	System.out.println("Socket timed out!");
-            	break;
-         	}
-				catch(Exception e)
-         	{
-            	e.printStackTrace();
-            	break;
-         	}
-				*/
+					//if socket closes, return (close thread)
+				}
 
 
 	      }
@@ -133,7 +121,6 @@ public class BootstrapServer
       {
          BootstrapServer server = new BootstrapServer(port);
 			server.run();
-         //t.start();
       }catch(IOException e)
       {
          e.printStackTrace();
