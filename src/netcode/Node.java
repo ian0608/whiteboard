@@ -15,6 +15,8 @@ public class Node
 	private int serverPort;
 	private boolean isMaster;
 	private SocketAddress masterAddress;
+	private ServerSocket serverSocket;
+	private static int MASTER_NODE_PORT =  1999; //yeah, too lazy to code otherwise
 
 	public Node(String serverName, int serverPort)
 	{
@@ -40,14 +42,15 @@ public class Node
 			if(wantsMaster)
 			{
 				System.out.println("Asking to become master");
-         	out.writeObject(new BootstrapMessage());
+				out.writeObject(new BootstrapMessage());
 
          	
-         	Object rec = in.readObject();
+				Object rec = in.readObject();
 				if (rec instanceof BootstrapMessage)
 				{
 					isMaster = true;
 					System.out.println("Accepted as master");
+					run();
 				}
 				else if (rec instanceof JoinMessage)
 				{
@@ -75,7 +78,7 @@ public class Node
 				System.out.println("Asking to join session");
 				out.writeObject(new JoinMessage());
 
-         	Object rec = in.readObject();
+				Object rec = in.readObject();
 				if (rec instanceof JoinMessage)
 				{
 					masterAddress = ((JoinMessage)rec).getPayload();
@@ -86,7 +89,12 @@ public class Node
 					}
 					//CONNECT TO MASTER
 					System.out.println("Master address is " + masterAddress);
-					System.out.println("(This is where we would attempt a connection to the master node)");
+					System.out.println("Connecting to master node.");
+					String hostIP = ((InetAddress) ((InetSocketAddress) masterAddress).getAddress()).getHostAddress();
+					System.out.println(hostIP);
+					clientSocket = new Socket(hostIP, MASTER_NODE_PORT);
+					System.out.println("Connected.");
+
 				}
 				else
 				{
@@ -113,6 +121,85 @@ public class Node
 	{
 		return isMaster;
 	}
+	
+	public void run() throws IOException {
+		try {
+			System.out.println("Creating Master Node server");
+			serverSocket = new ServerSocket(MASTER_NODE_PORT);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		while (true) {
+			try { 
+				System.out.println("Waiting for client nodes on port " +
+				serverSocket.getLocalPort() + "...");
+				Socket clientSocket = serverSocket.accept();
+				System.out.println("Node connected from "
+				      + clientSocket.getRemoteSocketAddress());
+
+				Thread t = new WorkerThread(clientSocket);
+				t.start();
+			
+			}
+			catch(SocketTimeoutException s)
+			{
+				System.out.println("Socket timed out!");
+				break;
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				break;
+			}
+			
+		}
+	}
+	
+	
+	
+	public class WorkerThread extends Thread
+	{
+		private Socket clientSocket;
+
+		public WorkerThread(Socket clientSocket)
+		{
+			this.clientSocket = clientSocket;
+			
+		}
+
+		public void run()
+		{
+			try{
+				ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+				ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+
+				while(true)
+				{
+					
+					Object rec = in.readObject();
+					if (rec instanceof DeltaMessage)	{
+						System.out.println((DeltaMessage) rec);
+					}
+
+				
+		
+				}		
+			}
+			catch(SocketTimeoutException s) {
+				System.out.println("Socket timed out!");
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+
+		}
+
+
+	}
+	
+	
 
 
    public static void main(String [] args)
