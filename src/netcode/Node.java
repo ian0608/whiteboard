@@ -17,6 +17,7 @@ public class Node
 	private SocketAddress masterAddress;
 	private ServerSocket serverSocket;
 	private static int MASTER_NODE_PORT =  1999; //yeah, too lazy to code otherwise
+    private Socket slaveSocket;
 
 	public Node(String serverName, int serverPort)
 	{
@@ -92,7 +93,7 @@ public class Node
 					System.out.println("Connecting to master node.");
 					String hostIP = ((InetAddress) ((InetSocketAddress) masterAddress).getAddress()).getHostAddress();
 					System.out.println(hostIP);
-					clientSocket = new Socket(hostIP, MASTER_NODE_PORT);
+					slaveSocket = new Socket(hostIP, MASTER_NODE_PORT);
 					System.out.println("Connected.");
 
 				}
@@ -138,7 +139,7 @@ public class Node
 				System.out.println("Node connected from "
 				      + clientSocket.getRemoteSocketAddress());
 
-				Thread t = new WorkerThread(clientSocket);
+				Thread t = new MasterNode(clientSocket);
 				t.start();
 			
 			}
@@ -155,49 +156,7 @@ public class Node
 			
 		}
 	}
-	
-	
-	
-	public class WorkerThread extends Thread
-	{
-		private Socket clientSocket;
 
-		public WorkerThread(Socket clientSocket)
-		{
-			this.clientSocket = clientSocket;
-			
-		}
-
-		public void run()
-		{
-			try{
-				ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-				ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-
-				while(true)
-				{
-					
-					Object rec = in.readObject();
-					if (rec instanceof DeltaMessage)	{
-						System.out.println((DeltaMessage) rec);
-					}
-
-				
-		
-				}		
-			}
-			catch(SocketTimeoutException s) {
-				System.out.println("Socket timed out!");
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-
-		}
-
-
-	}
 	
 	
 
