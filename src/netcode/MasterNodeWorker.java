@@ -4,16 +4,14 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
-public class MasterNodeWorker extends Thread
+public class MasterNodeWorker extends NodeWorker
 {
-    private Socket clientSocket;
-    private ObjectInputStream in;
-    private ObjectOutputStream out;
     private List<Thread> threads;
 
-    public MasterNodeWorker(Socket clientSocket, List<Thread> threads)
+    public MasterNodeWorker(Socket socket, List<Thread> threads)
     {
-        this.clientSocket = clientSocket;
+        super(socket);
+
         synchronized(this) {
             this.threads = threads;
         }
@@ -25,8 +23,8 @@ public class MasterNodeWorker extends Thread
         System.out.println("What is up? MasterNodeWorker in the house\n");
         try{
 
-            in = new ObjectInputStream(clientSocket.getInputStream());
-            out = new ObjectOutputStream(clientSocket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+            out = new ObjectOutputStream(socket.getOutputStream());
             while(true)
             {
                 if (in.available() > 0){
