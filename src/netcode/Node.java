@@ -2,6 +2,7 @@ package netcode;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * @authors Stephen Pardue, Ian Stainbrook, and James Ruiz
@@ -18,6 +19,7 @@ public class Node
 	private ServerSocket serverSocket;
 	private static int MASTER_NODE_PORT =  1999; //yeah, too lazy to code otherwise
     private Socket slaveSocket;
+    private List<Thread> threads;
 
 	public Node(String serverName, int serverPort)
 	{
@@ -50,6 +52,7 @@ public class Node
 				if (rec instanceof BootstrapMessage)
 				{
 					isMaster = true;
+                    threads = Collections.synchronizedList(new ArrayList());
 					System.out.println("Accepted as master");
 					run();
 				}
@@ -94,8 +97,11 @@ public class Node
 					String hostIP = ((InetAddress) ((InetSocketAddress) masterAddress).getAddress()).getHostAddress();
 					System.out.println(hostIP);
 					slaveSocket = new Socket(hostIP, MASTER_NODE_PORT);
-					System.out.println("Connected.");
-
+					System.out.println("Connected. "+slaveSocket);
+                    SlaveNodeWorker slave = new SlaveNodeWorker(slaveSocket);
+                    slave.run();
+                    slave.join();
+                   
 				}
 				else
 				{
@@ -134,12 +140,13 @@ public class Node
 		while (true) {
 			try { 
 				System.out.println("Waiting for client nodes on port " +
-				serverSocket.getLocalPort() + "...");
+                    serverSocket.getLocalPort() + "...");
 				Socket clientSocket = serverSocket.accept();
 				System.out.println("Node connected from "
 				      + clientSocket.getRemoteSocketAddress());
 
-				Thread t = new MasterNode(clientSocket);
+				Thread t = new MasterNodeWorker(clientSocket, threads);
+                threads.add(t);
 				t.start();
 			
 			}
