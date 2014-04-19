@@ -44,18 +44,6 @@ public class NetBoard extends JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //setBackground(Color.CYAN);
 
-        // test lines
-        
-		final int x1=15,y1=15, x2=30, y2=30, x3=100, y3=100, x4=150, y4=150;
-		ArrayList<Integer> myPixels =new ArrayList<Integer>();
-		myPixels.add(x1);
-		myPixels.add(y1);
-		myPixels.add(x2);
-		myPixels.add(y2);
-		myPixels.add(x3);
-		myPixels.add(y3);
-		myPixels.add(x4);
-		myPixels.add(y4);
         
         // JMenuBar
         menuBar = new JMenuBar();
