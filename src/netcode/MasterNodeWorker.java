@@ -43,7 +43,9 @@ public class MasterNodeWorker extends NodeWorker
         System.out.println("What is up? MasterNodeWorker in the house\n");
         try {
             in = new ObjectInputStream(socket.getInputStream());
+	    System.out.println("Got the in");
             out = new ObjectOutputStream(socket.getOutputStream());
+	    System.out.println("Got the out");	
             ObjectReadThread rt = new ObjectReadThread(this);
             rt.start();
             while(true){
