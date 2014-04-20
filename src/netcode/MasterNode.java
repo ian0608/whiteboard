@@ -17,8 +17,18 @@ public class MasterNode extends Thread
     {
         try{
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+	    try {
+		Thread.sleep(2000);
+	    } catch(Exception e) {
+		e.printStackTrace();
+	    }
             ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-
+	    try {
+		Thread.sleep(2000);
+	    } catch(Exception e) {
+		e.printStackTrace();
+	    }
+	    
             while(true)
             {
                 

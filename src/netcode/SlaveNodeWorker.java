@@ -25,8 +25,19 @@ public class SlaveNodeWorker extends NodeWorker
 
             System.out.println(socket);
             out = new ObjectOutputStream(socket.getOutputStream());
+	    try {
+		Thread.sleep(2000);
+	    } catch(Exception e) {
+		e.printStackTrace();
+	    }
             in = new ObjectInputStream(socket.getInputStream());
-
+	    try {
+		Thread.sleep(2000);
+	    } catch(Exception e) {
+		e.printStackTrace();
+	    }
+	    
+	    
             ObjectReadThread t = new ObjectReadThread();
             t.start();
 
