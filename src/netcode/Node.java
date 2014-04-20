@@ -235,6 +235,9 @@ public class Node
                         for (Pixel pixel : pixels) {
                             System.out.println(pixel);
                         }
+                        while (node.clientWorkerNode != null) {
+                            continue;
+                        }
                         node.clientWorkerNode.send(new DeltaMessage(pixels));
                         pixels = new ArrayList<Pixel>();
                     } else {
