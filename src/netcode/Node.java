@@ -17,7 +17,7 @@ public class Node
 	private boolean isMaster;
 	private SocketAddress masterAddress;
 	private ServerSocket serverSocket;
-	private static int MASTER_NODE_PORT =  1999; //yeah, too lazy to code otherwise
+	private static int MASTER_NODE_PORT =  33333; //yeah, too lazy to code otherwise
     private Socket slaveSocket;
     private List<MasterNodeWorker> threads;
 
