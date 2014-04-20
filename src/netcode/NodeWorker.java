@@ -1,4 +1,8 @@
 package netcode;
+/**
+Stephen Pardue
+4-19-2014
+  **/
 
 import java.net.*;
 import java.io.*;
@@ -13,38 +17,48 @@ abstract class NodeWorker extends Thread {
     protected Queue<Object> receive;
 
     public NodeWorker(Socket socket){
-        this.socket = socket;
+        synchronized(this) {
+            this.socket = socket;
+        }
         send = new LinkedList<Object>();
         receive = new LinkedList<Object>();
     }
 
-    public void send(DeltaMessage dmsg){
-        send.add(dmsg);
+    public synchronized void send(Object o){
+        getSendBuffer().add(o);
     }
 
-    public void send(Line line){
-        send.add(line);
+    public Queue<Object> getReceiveBuffer() {
+        return receive;
     }
 
-    public boolean hasLine() {
-        return receive.peek() instanceof Line;
+    public Queue<Object> getSendBuffer() {
+        return send;
     }
 
-    public boolean hasDeltaMessage() {
-        return receive.peek() instanceof DeltaMessage;
+    public synchronized boolean hasLine() {
+        return getReceiveBuffer().peek() instanceof Line;
     }
 
-    public Line getLine() {
+    public synchronized void addToReceiveBuffer(Object o) {
+        getReceiveBuffer().add(o);
+    }
+
+    public synchronized boolean hasDeltaMessage() {
+        return getReceiveBuffer().peek() instanceof DeltaMessage;
+    }
+
+    public synchronized Line getLine() {
         if (hasLine()){
-            return (Line) receive.remove();
+            return (Line) getReceiveBuffer().remove();
         } else {
             return null;
         }
     }
 
-    public DeltaMessage getDeltaMessage() {
+    public synchronized DeltaMessage getDeltaMessage() {
         if (hasDeltaMessage()){
-            return (DeltaMessage) receive.remove();
+            return (DeltaMessage) getReceiveBuffer().remove();
         } else {
             return null;
         }

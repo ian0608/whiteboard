@@ -19,7 +19,9 @@ public class Node
 	private ServerSocket serverSocket;
 	private static int MASTER_NODE_PORT =  1999; //yeah, too lazy to code otherwise
     private Socket slaveSocket;
-    private List<Thread> threads;
+    private List<MasterNodeWorker> threads;
+
+    private NodeWorker clientWorkerNode;
 
 	public Node(String serverName, int serverPort)
 	{
@@ -54,7 +56,7 @@ public class Node
 					isMaster = true;
                     threads = Collections.synchronizedList(new ArrayList());
 					System.out.println("Accepted as master");
-					run();
+					runMaster();
 				}
 				else if (rec instanceof JoinMessage)
 				{
@@ -69,6 +71,7 @@ public class Node
 
 					//CONNECT TO MASTER
 					System.out.println("(This is where we would attempt a connection to the master node");
+                    runSlave();
 				}
 				else
 				{
@@ -92,15 +95,7 @@ public class Node
 						return false;
 					}
 					//CONNECT TO MASTER
-					System.out.println("Master address is " + masterAddress);
-					System.out.println("Connecting to master node.");
-					String hostIP = ((InetAddress) ((InetSocketAddress) masterAddress).getAddress()).getHostAddress();
-					System.out.println(hostIP);
-					slaveSocket = new Socket(hostIP, MASTER_NODE_PORT);
-					System.out.println("Connected. "+slaveSocket);
-                    SlaveNodeWorker slave = new SlaveNodeWorker(slaveSocket);
-                    slave.run();
-                    slave.join();
+                    runSlave();
                    
 				}
 				else
@@ -128,40 +123,63 @@ public class Node
 	{
 		return isMaster;
 	}
-	
-	public void run() throws IOException {
-		try {
-			System.out.println("Creating Master Node server");
-			serverSocket = new ServerSocket(MASTER_NODE_PORT);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		while (true) {
-			try { 
-				System.out.println("Waiting for client nodes on port " +
-                    serverSocket.getLocalPort() + "...");
-				Socket clientSocket = serverSocket.accept();
-				System.out.println("Node connected from "
-				      + clientSocket.getRemoteSocketAddress());
 
-				Thread t = new MasterNodeWorker(clientSocket, threads);
-                threads.add(t);
-				t.start();
-			
-			}
-			catch(SocketTimeoutException s)
-			{
-				System.out.println("Socket timed out!");
-				break;
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-				break;
-			}
-			
-		}
+    public void runSlave() {
+        try { 
+            System.out.println("Master address is " + masterAddress);
+            System.out.println("Connecting to master node.");
+            String hostIP = ((InetAddress) ((InetSocketAddress) masterAddress).getAddress()).getHostAddress();
+            System.out.println(hostIP);
+            slaveSocket = new Socket(hostIP, MASTER_NODE_PORT);
+            System.out.println("Connected "+slaveSocket);
+            SlaveNodeWorker slave = new SlaveNodeWorker(slaveSocket);
+            slave.start();
+            clientWorkerNode = slave;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+	
+	public void runMaster() throws IOException {
+        new Thread(){ 
+            public void run() {
+                try {
+                    System.out.println("Creating Master Node server");
+                    serverSocket = new ServerSocket(MASTER_NODE_PORT);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                while (true) {
+                    try { 
+                        System.out.println("Waiting for client nodes on port " +
+                            serverSocket.getLocalPort() + "...");
+                        Socket clientSocket = serverSocket.accept();
+                        System.out.println("Node connected from "
+                              + clientSocket.getRemoteSocketAddress());
+
+                        MasterNodeWorker t = new MasterNodeWorker(clientSocket, threads);
+                        threads.add(t);
+                        if (threads.size() <= 1){
+                            clientWorkerNode = t;
+                        }
+                        t.start();
+                    
+                    }
+                    catch(SocketTimeoutException s)
+                    {
+                        System.out.println("Socket timed out!");
+                        break;
+                    }
+                    catch(Exception e)
+                    {
+                        e.printStackTrace();
+                        break;
+                    }
+                    
+                }
+            }
+        }.start();
 	}
 
 	
@@ -208,8 +226,42 @@ public class Node
 			else
 				System.out.println("This node IS NOT master");
 		}
+        List<Pixel> pixels = new ArrayList<Pixel>();
+		while(true) {
+            try { 
+                if (System.in.available() > 0){
+                    int dontCare = System.in.read();
+                    if (dontCare == 10){
+                        for (Pixel pixel : pixels) {
+                            System.out.println(pixel);
+                        }
+                        node.clientWorkerNode.send(new DeltaMessage(pixels));
+                        pixels = new ArrayList<Pixel>();
+                    } else {
+                        pixels.add(Pixel.createRandomPixel());
+                    }
+                }
 
-		while(true) {}
+                if (node.clientWorkerNode != null){
+
+                    DeltaMessage dmsg = node.clientWorkerNode.getDeltaMessage();
+                    while (dmsg != null){
+                        System.out.println("Received dmsg: "+dmsg);
+                        dmsg = node.clientWorkerNode.getDeltaMessage();
+                    }
+                }
+
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            //System.out.println(Pixel.createRandomPixel());
+
+
+
+
+        }
 	}
 
 }

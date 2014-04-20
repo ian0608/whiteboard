@@ -1,24 +1,33 @@
 package netcode;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.io.Serializable;
 
 public class DeltaMessage implements Message, Serializable
 {
-	private ArrayList<Pixel> pixels;
+	private List<Pixel> pixels;
 
 	public DeltaMessage()
 	{
 		pixels = null;
 	}
 
-	public DeltaMessage(ArrayList<Pixel> pixels)
+	public DeltaMessage(List<Pixel> pixels)
 	{
 		this.pixels = pixels;
 	}
 
-	public ArrayList<Pixel> getPayload()
+	public List<Pixel> getPayload()
 	{
 		return pixels;
 	}
+
+    public String toString() {
+        String ret = "[";
+        for (Pixel pixel : pixels){
+            ret += pixel+",";
+        }
+        ret+="]";
+        return ret;
+    }
 }

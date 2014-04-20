@@ -4,12 +4,18 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+/**
+Stephen Pardue
+4-19-2014
+  **/
+
 public class SlaveNodeWorker extends NodeWorker 
 {
 
     public SlaveNodeWorker(Socket socket){
         super(socket);
     }
+
 
 
     public void run()
@@ -20,19 +26,16 @@ public class SlaveNodeWorker extends NodeWorker
             System.out.println(socket);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
+
+            ObjectReadThread t = new ObjectReadThread();
+            t.start();
+
             while(true)
             {
-                
-                System.out.println("Slaves bitches");
-                System.out.println("i am a slave bitches");
-                
-                //Object rec = in.readObject();
-                //if (rec instanceof DeltaMessage)	{
-                    //System.out.println((DeltaMessage) rec);
-                //}
-
-            
-    
+                if (send.peek() != null){
+                    out.writeObject(send.poll());
+                    System.out.println("Just sent something\n");
+                }
             }		
         }
         catch(Exception e)
@@ -40,5 +43,19 @@ public class SlaveNodeWorker extends NodeWorker
             e.printStackTrace();
         }
 
+    }
+
+    private class ObjectReadThread extends Thread {
+        public void run() {
+            while (true) {
+                try {
+                    receive.add(in.readObject());
+                    System.out.println("Got an object");
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
