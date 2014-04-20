@@ -84,7 +84,15 @@ public class NetBoard extends JPanel {
         clearBoard.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent event) {
                 safeLineList.clear();
-            }
+                repaint();
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        new NetBoard();
+//                    }
+//                }); //end invokeLater
+            
+            }//end actionPerformed
 
         });
         
@@ -143,9 +151,9 @@ public class NetBoard extends JPanel {
         };
         
       
-       
+       //Using MouseListeners Here
         panel.addMouseListener(new MyMouseListener());
-        addMouseListener(new MyMouseListener());
+        //addMouseListener(new MyMouseListener());
         
         frame.add(panel);
 
@@ -221,9 +229,18 @@ public class NetBoard extends JPanel {
     		
     		//Queue a different datastructure that the new Line object to be sent
     		//QueueOfDeltas.add(deltaLine); //Queue this line for the local client
+    		repaint();
+    		
+//    		SwingUtilities.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    new NetBoard();
+//                }
+//            });//end invokeLater
+        
     		
     		
-    	}
+    	}//end mouseReleased
 
     	
     }  //end MouseListener
