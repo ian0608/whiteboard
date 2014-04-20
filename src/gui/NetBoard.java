@@ -6,61 +6,117 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
+
 import javax.swing.SwingUtilities;
 import netcode.Line;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NetBoard extends JPanel {
-
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	ArrayList<Line> LineList =new ArrayList<Line>();
+	List<Line> safeLineList = Collections.synchronizedList(LineList);
 	ConcurrentLinkedQueue<Line> QueueOfDeltas = new ConcurrentLinkedQueue<Line>();
+	
+	String credits="CS 4251 Networking White Board Project\n\n"+
+	"Developers: Stephen Pardue, Ian Stainbrook, James Ruiz\n\nProfessor: Mostafa Ammar";
+	
     int x, y; // axis position for oval
     //JMenuBar Variables
     JMenuBar menuBar;
-    JMenu file;
+    JMenu file, help;
     JMenuItem newBoard;
     JMenuItem clearBoard;
     JMenuItem exitBoard;
+    JMenuItem about;
     Font font = new Font("Arial", Font.ITALIC, 30);
 
 
     // CONSTRUCTOR
     public NetBoard() {
         // Window Properties
-        JFrame frame = new JFrame();
+       final JFrame frame = new JFrame();
         frame.setTitle("Network Whiteboard");
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //setBackground(Color.CYAN);
 
+       
         
         // JMenuBar
         menuBar = new JMenuBar();
+        //Add category
         file = new JMenu("File");
-        newBoard = new JMenuItem("New Board");
+        //Add menu items to a category
+       // newBoard = new JMenuItem("New Board");
         clearBoard = new JMenuItem("Clear Board");
-        exitBoard = new JMenuItem("Close Program");
+        exitBoard = new JMenuItem("Exit Program");
 
-        menuBar.add(file);
-        file.add(newBoard);
+        //My ghetto actionListeners
+        exitBoard.setToolTipText("Exit Application");
+        exitBoard.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent event) {
+                System.exit(0);
+            }
+
+        });
+
+        clearBoard.setToolTipText("Erases all drawn lines");
+        clearBoard.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent event) {
+                safeLineList.clear();
+            }
+
+        });
         
+        
+        help=new JMenu("Help");
+        about=new JMenuItem("About");
+        about.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent event) {
+            	JOptionPane.showMessageDialog(frame,credits,"Credits",JOptionPane.PLAIN_MESSAGE);
+            }
+
+        });
+        
+        
+        //I'm done creating menu bar junk
+        menuBar.add(file);
+       // file.add(newBoard);
+        //after this, make a pop-up dialogue that asks if you want to be Host or Client
         file.add(clearBoard);
         file.addSeparator();
         file.add(exitBoard);
+        
+        menuBar.add(help);
+        help.add(about);
 
         JPanel panel = new JPanel() {
-            @Override
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
@@ -68,15 +124,16 @@ public class NetBoard extends JPanel {
                 g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
                 g.setFont(font);
-                g.drawString("White Board", 100, 200);
-
+                //g.drawString("Hold mouse in one position and release in another", 100, 200);
+                g.drawString("Hold mouse in one position", 25, 50);
+                g.drawString("and release in another", 25, 150);
                 g.setColor(Color.red);
                
-                QueueLines(); //Queue Lines Objects for Testing to simulate new network deltas
-                while(!QueueOfDeltas.isEmpty()){
-                Line newLine = QueueOfDeltas.poll();
+               // QueueLines(); //I queue Line objects into thread-safe queue
+                for(Line newLine:safeLineList){
+                
                 g.drawLine(newLine.getX1(),newLine.getX2(),newLine.getY1(),newLine.getY2());
-                }//end whle loop
+                }//end while loop
             }
 
             @Override
@@ -85,7 +142,11 @@ public class NetBoard extends JPanel {
             }
         };
         
-
+      
+       
+        panel.addMouseListener(new MyMouseListener());
+        addMouseListener(new MyMouseListener());
+        
         frame.add(panel);
 
         frame.setJMenuBar(menuBar);
@@ -98,6 +159,9 @@ public class NetBoard extends JPanel {
         x = 150;
         y = 150;
 
+       
+        
+        
         
   
     }//end NetBoard Class
@@ -113,7 +177,7 @@ public class NetBoard extends JPanel {
     }
     
     /**
-     * This is a test method I've been using to queue line objects in a thread-safe queue
+     * This is a test method I've been using to queue line objects in a thread-safe ArrayList
      */
     public void QueueLines(){
         
@@ -121,12 +185,48 @@ public class NetBoard extends JPanel {
       	Line myLine2 = new Line(100, 130, 270,290);
       	Line myLine3 = new Line(105, 100, 300,400);
       	
-      	QueueOfDeltas.add(myLine);
-      	QueueOfDeltas.add(myLine2);
-      	QueueOfDeltas.add(myLine3);
+//      	QueueOfDeltas.add(myLine);
+//      	QueueOfDeltas.add(myLine2);
+//      	QueueOfDeltas.add(myLine3);
+      	safeLineList.add(myLine);
+      	safeLineList.add(myLine2);
+      	safeLineList.add(myLine3);
       	 
         }
     
+   /**
+    * 
+    * Lines are created by holding down the mouse in one position and releasing in another position
+    *
+    */
+    class MyMouseListener extends MouseAdapter {
+    	private int deltaX1, deltaY1, deltaX2, deltaY2;
+    	
+    	
+
+    	@Override
+    	public void mousePressed(MouseEvent e) {
+    		deltaX1=e.getX();
+    		deltaY1=e.getY();
+    		
+    	}
+
+    	@Override
+    	public void mouseReleased(MouseEvent e) {
+    		deltaX2=e.getX();
+    		deltaY2=e.getY();
+    		Line deltaLine = new Line(deltaX1, deltaY1, deltaX2, deltaY2);
+    		System.out.println("X1: "+deltaX1+ " Y1: "+deltaY1+" X2: "+deltaX2+" Y2: "+deltaY2);
+    		safeLineList.add(deltaLine); //for use by local client only
+    		
+    		//Queue a different datastructure that the new Line object to be sent
+    		//QueueOfDeltas.add(deltaLine); //Queue this line for the local client
+    		
+    		
+    	}
+
+    	
+    }  //end MouseListener
     
     // MAIN METHOD
     public static void main(String[] args) {
