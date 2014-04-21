@@ -25,7 +25,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import javax.swing.SwingUtilities;
-import netcode.Line;
+
+//import com.sun.corba.se.impl.orbutil.graph.Node;
+
+import netcode.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NetBoard extends JPanel {
@@ -43,10 +46,11 @@ public class NetBoard extends JPanel {
     int x, y; // axis position for oval
     //JMenuBar Variables
     JMenuBar menuBar;
-    JMenu file, help;
+    JMenu file, start, help;
     JMenuItem newBoard;
     JMenuItem clearBoard;
     JMenuItem exitBoard;
+    JMenuItem masterNode,clientNode;
     JMenuItem about;
     Font font = new Font("Arial", Font.ITALIC, 30);
 
@@ -96,6 +100,25 @@ public class NetBoard extends JPanel {
 
         });
         
+
+        start=new JMenu("Start");
+        masterNode=new JMenuItem("Master");
+        masterNode.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent event) {
+            	Node masterNode = new Node("shuttle1.gatech.edu",1100);
+            	masterNode.bootstrap(true);
+            }
+
+        });
+        clientNode=new JMenuItem("Client");
+        clientNode.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent event) {
+            	Node clientNode = new Node("shuttle1.gatech.edu",1100);
+            	clientNode.bootstrap(false);
+            }
+
+        });
+ 
         
         help=new JMenu("Help");
         about=new JMenuItem("About");
@@ -115,6 +138,10 @@ public class NetBoard extends JPanel {
         file.addSeparator();
         file.add(exitBoard);
         
+        menuBar.add(start);
+        start.add(masterNode);
+        start.add(clientNode);
+        
         menuBar.add(help);
         help.add(about);
 
@@ -133,8 +160,8 @@ public class NetBoard extends JPanel {
 
                 g.setFont(font);
                 //g.drawString("Hold mouse in one position and release in another", 100, 200);
-                g.drawString("Hold mouse in one position", 25, 50);
-                g.drawString("and release in another", 25, 150);
+//                g.drawString("Hold mouse in one position", 25, 50);
+//                g.drawString("and release in another", 25, 150);
                 g.setColor(Color.red);
                
                // QueueLines(); //I queue Line objects into thread-safe queue
