@@ -105,7 +105,7 @@ public class NetBoard extends JPanel {
         masterNode=new JMenuItem("Master");
         masterNode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent event) {
-            	Node masterNode = new Node("shuttle1.gatech.edu",1100);
+            	Node masterNode = new Node("127.0.0.1",1100);
             	masterNode.bootstrap(true);
             }
 
@@ -113,7 +113,7 @@ public class NetBoard extends JPanel {
         clientNode=new JMenuItem("Client");
         clientNode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent event) {
-            	Node clientNode = new Node("shuttle1.gatech.edu",1100);
+            	Node clientNode = new Node("127.0.0.1",1100);
             	clientNode.bootstrap(false);
             }
 
