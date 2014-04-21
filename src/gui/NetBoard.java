@@ -52,6 +52,7 @@ public class NetBoard extends JPanel {
     JMenuItem exitBoard;
     JMenuItem masterNode,clientNode;
     JMenuItem about;
+    Node ultimateNode; //It's called ultimateNode, because NodeWorker.java abstracts it for me
     Font font = new Font("Arial", Font.ITALIC, 30);
 
 
@@ -105,16 +106,16 @@ public class NetBoard extends JPanel {
         masterNode=new JMenuItem("Master");
         masterNode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent event) {
-            	Node masterNode = new Node("127.0.0.1",1100);
-            	masterNode.bootstrap(true);
+            	ultimateNode = new Node("127.0.0.1",1100);
+            	ultimateNode.bootstrap(true);
             }
 
         });
         clientNode=new JMenuItem("Client");
         clientNode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent event) {
-            	Node clientNode = new Node("127.0.0.1",1100);
-            	clientNode.bootstrap(false);
+            	ultimateNode = new Node("127.0.0.1",1100);
+            	ultimateNode.bootstrap(false);
             }
 
         });
@@ -165,6 +166,9 @@ public class NetBoard extends JPanel {
                 g.setColor(Color.red);
                
                // QueueLines(); //I queue Line objects into thread-safe queue
+                
+              //Stephen! This is where I plan checking the networkqueue for new deltas and then I would
+              //add them to my safeLineList
                 for(Line newLine:safeLineList){
                 
                 g.drawLine(newLine.getX1(),newLine.getX2(),newLine.getY1(),newLine.getY2());
@@ -253,6 +257,9 @@ public class NetBoard extends JPanel {
     		Line deltaLine = new Line(deltaX1, deltaY1, deltaX2, deltaY2);
     		System.out.println("X1: "+deltaX1+ " Y1: "+deltaY1+" X2: "+deltaX2+" Y2: "+deltaY2);
     		safeLineList.add(deltaLine); //for use by local client only
+    		//Stephen! This is where I plan on adding the new line object to the network queue!
+    		
+    		
     		
     		//Queue a different datastructure that the new Line object to be sent
     		//QueueOfDeltas.add(deltaLine); //Queue this line for the local client
