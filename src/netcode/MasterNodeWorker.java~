@@ -14,7 +14,7 @@ Stephen Pardue
 public class MasterNodeWorker extends NodeWorker
 {
     private List<MasterNodeWorker> threads;
-    private static Queue<Object> masterClientQueue = new ConcurrentLinkedQueue<Object>();
+    private static Queue<Object> masterClientQueue = new LinkedList<Object>();
 
     
 
